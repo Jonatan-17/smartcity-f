@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Reportes — SmartCity-F</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">🏙️ SmartCity-F</a>
+        <ul>
+            <li><a href="index.html">Inicio</a></li>
+            <li><a href="tickets.html" class="active">Mis Reportes</a></li>
+            <li><a href="form.html">Reportar Daño</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <h1 style="margin-bottom: 0.5rem;">📋 Mis Reportes</h1>
+            <p style="color: var(--gray); margin-bottom: 2rem;">Consulta y gestiona el estado de tus reportes de infraestructura urbana</p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="totalTickets">0</h3>
+                    <p>Total</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalRegistrados">0</h3>
+                    <p>Registrados</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalProceso">0</h3>
+                    <p>En Proceso</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalSolucionados">0</h3>
+                    <p>Solucionados</p>
+                </div>
+            </div>
+
+            <div style="background: #f1f5f9; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">🔍 Filtros</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Estado</label>
+                        <select id="filtroEstado" class="form-control">
+                            <option value="">Todos</option>
+                            <option value="Registrado">Registrado</option>
+                            <option value="En Asignación">En Asignación</option>
+                            <option value="En Reparación">En Reparación</option>
+                            <option value="Solucionado">Solucionado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Prioridad</label>
+                        <select id="filtroPrioridad" class="form-control">
+                            <option value="">Todas</option>
+                            <option value="Crítica">Crítica</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Moderada">Moderada</option>
+                            <option value="Baja">Baja</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Categoría IA</label>
+                        <select id="filtroCategoria" class="form-control">
+                            <option value="">Todas</option>
+                            <option value="Vías">Vías</option>
+                            <option value="Eléctrico">Eléctrico</option>
+                            <option value="Acueducto">Acueducto</option>
+                            <option value="Semáforos">Semáforos</option>
+                            <option value="Espacio Público">Espacio Público</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="limpiarFiltros()" class="btn btn-secondary" style="margin-top: 1rem;">Limpiar filtros</button>
+                <button onclick="cargarTickets()" class="btn btn-primary" style="margin-top: 1rem;">Consultar</button>
+            </div>
+
+            <div class="ticket-list" id="ticketList">
+                <div style="text-align: center; padding: 3rem; color: var(--gray);">
+                    <p style="font-size: 3rem; margin-bottom: 1rem;">📭</p>
+                    <h3>No hay reportes aún</h3>
+                    <p>Registra tu primer reporte de daño urbano</p>
+                    <a href="form.html" class="btn btn-primary" style="margin-top: 1rem;">Reportar Daño</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="ticketModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Detalles del Ticket</h2>
+                <button class="modal-close" onclick="cerrarModal()">&times;</button>
+            </div>
+            <div id="modalBody">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+
+    <script src="js/tickets.js"></script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCity-F | Sistema Inteligente de Reportes Urbanos</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">🏙️ SmartCity-F</a>
+        <ul>
+            <li><a href="#beneficios">Beneficios</a></li>
+            <li><a href="#funcionamiento">¿Cómo funciona?</a></li>
+            <li><a href="tickets.html">Mis Reportes</a></li>
+            <li><a href="form.html" class="active">Reportar Daño</a></li>
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <h1>Reportes urbanos inteligentes con IA</h1>
+        <p>Reporta daños en la infraestructura de tu ciudad, obtén clasificación automática con IA, seguimiento en tiempo real y notificaciones directas a Telegram. Todo automatizado.</p>
+        <div class="hero-buttons">
+            <a href="form.html" class="btn btn-success">📍 Reportar Daño</a>
+            <a href="tickets.html" class="btn" style="background: white; color: var(--primary);">📋 Consultar Reportes</a>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem;">📊 Reportes Recientes</h2>
+            <div class="ticket-list" id="recentTickets">
+                <div class="ticket-item critica">
+                    <div class="ticket-info">
+                        <h3>🚨 #SC-2847 - CRÍTICA</h3>
+                        <p>Fuga de agua en vía principal</p>
+                        <p><small>✦ IA: Acueducto · Calle 72 con Carrera 15</small></p>
+                    </div>
+                    <span class="badge badge-proceso">En Proceso</span>
+                </div>
+                <div class="ticket-item alta">
+                    <div class="ticket-info">
+                        <h3>⚡ #SC-2846 - ALTA</h3>
+                        <p>Luminaria dañada en parque</p>
+                        <p><small>✦ IA: Eléctrico · Parque Central</small></p>
+                    </div>
+                    <span class="badge badge-registrado">Registrado</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>98%</h3>
+                <p>Precisión IA</p>
+            </div>
+            <div class="stat-card">
+                <h3>&lt;2s</h3>
+                <p>Respuesta</p>
+            </div>
+            <div class="stat-card">
+                <h3>24/7</h3>
+                <p>Monitoreo</p>
+            </div>
+        </div>
+
+        <section id="beneficios">
+            <h2 style="text-align: center; margin: 3rem 0 2rem;">¿Por qué SmartCity-F?</h2>
+            <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;">Tecnología al servicio de la ciudadanía. Cada reporte procesado, clasificado y enrutado en segundos.</p>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">📍</div>
+                    <h3>Geolocalización precisa</h3>
+                    <p>Captura automática de coordenadas GPS y generación de enlaces de Google Maps para ubicación exacta del daño.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">✦</div>
+                    <h3>Clasificación con IA</h3>
+                    <p>OpenAI GPT-4 Vision analiza la imagen y descripción, detecta categoría, urgencia y nivel de confianza automáticamente.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">✈️</div>
+                    <h3>Notificaciones Telegram</h3>
+                    <p>El equipo de mantenimiento recibe alertas instantáneas con el reporte completo, prioridad y ubicación.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Automatización N8N</h3>
+                    <p>Orquestación completa: validación, análisis IA, detección de duplicados, enrutamiento y notificaciones.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Anti-duplicados y Spam</h3>
+                    <p>Detección inteligente de reportes duplicados en la misma zona y filtrado de contenido no relacionado.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📊</div>
+                    <h3>Seguimiento en tiempo real</h3>
+                    <p>Panel ciudadano para consultar el estado de tus reportes: Registrado, En Asignación, En Reparación, Solucionado.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="funcionamiento">
+            <h2 style="text-align: center; margin: 3rem 0 2rem;">Flujo del sistema</h2>
+            <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;">De reporte ciudadano a resolución en segundos</p>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-number">01</div>
+                    <div class="timeline-content">
+                        <h3>📝 Reportar daño</h3>
+                        <p>El ciudadano completa el formulario con foto, ubicación y descripción del problema.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-number">02</div>
+                    <div class="timeline-content">
+                        <h3>⚙️ N8N procesa</h3>
+                        <p>El webhook captura los datos, valida y los envía al pipeline de automatización.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-number">03</div>
+                    <div class="timeline-content">
+                        <h3>🗄️ Google Sheets</h3>
+                        <p>Se registra el ticket con ID único, timestamp y todos los metadatos del caso.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-number">04</div>
+                    <div class="timeline-content">
+                        <h3>✦ IA analiza</h3>
+                        <p>GPT-4 Vision clasifica categoría, prioridad y confianza del reporte automáticamente.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-number">05</div>
+                    <div class="timeline-content">
+                        <h3>✈️ Telegram notifica</h3>
+                        <p>El bot envía el reporte al equipo de mantenimiento con toda la información.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-number">06</div>
+                    <div class="timeline-content">
+                        <h3>📡 Seguimiento</h3>
+                        <p>El ciudadano recibe confirmación y puede consultar el estado en tiempo real.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="card" style="text-align: center; margin-top: 3rem;">
+            <h2>¿Listo para mejorar tu ciudad?</h2>
+            <p style="color: var(--gray); margin: 1rem 0 2rem;">Reporta el primer daño que encuentres y experimenta el poder de la automatización con IA.</p>
+            <a href="form.html" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">📍 Reportar daño ahora</a>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-grid">
+            <div>
+                <h3>🏙️ SmartCity-F</h3>
+                <p style="color: #94a3b8;">Sistema inteligente de diagnóstico y enrutamiento de reportes de infraestructura urbana con IA, N8N y Telegram.</p>
+            </div>
+            <div>
+                <h3>Sistema</h3>
+                <a href="form.html">Reportar daño</a>
+                <a href="tickets.html">Consultar reportes</a>
+                <a href="#funcionamiento">Cómo funciona</a>
+            </div>
+            <div>
+                <h3>Tecnología</h3>
+                <a href="#">N8N Automation</a>
+                <a href="#">OpenAI GPT-4</a>
+                <a href="#">Telegram Bot</a>
+                <a href="#">Google Sheets</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 SmartCity-F · Sistema de Gestión de Infraestructura Urbana</p>
+            <p style="margin-top: 0.5rem;">Construido con N8N · OpenAI · Telegram · Google Sheets</p>
+        </div>
+    </footer>
+</body>
+</html>

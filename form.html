@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportar Daño — SmartCity-F</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">🏙️ SmartCity-F</a>
+        <ul>
+            <li><a href="index.html">Inicio</a></li>
+            <li><a href="tickets.html">Mis Reportes</a></li>
+            <li><a href="form.html" class="active">Reportar Daño</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <h1 style="margin-bottom: 0.5rem;">📍 Reportar Daño Urbano</h1>
+                <p style="color: var(--gray);">Completa el formulario. La IA analizará tu caso y notificará al equipo en segundos.</p>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                <span style="background: var(--primary); color: white; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem;">1 Formulario</span>
+                <span style="background: #e2e8f0; color: var(--dark); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem;">2 N8N procesa</span>
+                <span style="background: #e2e8f0; color: var(--dark); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem;">3 IA clasifica</span>
+                <span style="background: #e2e8f0; color: var(--dark); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem;">4 Telegram notifica</span>
+                <span style="background: #e2e8f0; color: var(--dark); padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem;">5 Confirmación</span>
+            </div>
+
+            <div style="background: #fef3c7; border-left: 4px solid var(--warning); padding: 1rem; border-radius: 6px; margin-bottom: 2rem;">
+                <p style="margin: 0;"><strong>✦ Nota:</strong> La IA generará automáticamente una clasificación de tu reporte (categoría, prioridad y confianza) al momento de recibirlo.</p>
+            </div>
+
+            <form id="reportForm">
+                <h3 style="margin: 2rem 0 1rem; color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">01. Datos del Ciudadano</h3>
+                
+                <div class="form-group">
+                    <label for="nombre">Nombre completo *</label>
+                    <input type="text" id="nombre" class="form-control" required placeholder="Ej: Juan Pérez">
+                </div>
+
+                <div class="form-group">
+                    <label for="cedula">Cédula/ID *</label>
+                    <input type="text" id="cedula" class="form-control" required placeholder="Ej: 1234567890">
+                </div>
+
+                <div class="form-group">
+                    <label for="telefono">Teléfono *</label>
+                    <input type="tel" id="telefono" class="form-control" required placeholder="Ej: +57 300 123 4567">
+                </div>
+
+                <h3 style="margin: 2rem 0 1rem; color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">02. Ubicación del Daño</h3>
+                
+                <div class="form-group">
+                    <div class="geo-box">
+                        <button type="button" id="btnGeo" class="btn btn-secondary">📍 Obtener Ubicación Automática</button>
+                        <p id="geoStatus" class="geo-status">Haz click para capturar las coordenadas GPS del lugar del daño</p>
+                        
+                        <!-- MAPA EN TIEMPO REAL -->
+                        <div id="map" style="height: 300px; margin-top: 1rem; border-radius: 8px; display: none; z-index: 1;"></div>
+                        
+                        <div class="geo-coords" id="geoCoords" style="display: none;">
+                            <div class="coord-box">📍 Lat: <span id="latDisplay">—</span></div>
+                            <div class="coord-box">📍 Lng: <span id="lngDisplay">—</span></div>
+                        </div>
+                        <input type="hidden" id="lat" required>
+                        <input type="hidden" id="lng" required>
+                    </div>
+                    <p class="error-msg" id="errorGeo">⚠️ Debes obtener la ubicación para continuar.</p>
+                    
+                    <div style="margin-top: 1rem;">
+                        <label for="direccion">Dirección aproximada (opcional)</label>
+                        <input type="text" id="direccion" class="form-control" placeholder="Ej: Calle 72 # 15-30">
+                    </div>
+                </div>
+
+                <h3 style="margin: 2rem 0 1rem; color: var(--primary); border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem;">03. Detalles del Reporte</h3>
+                
+                <div class="form-group">
+                    <label for="descripcion">Descripción del daño * <span id="charCount" style="font-weight: normal; color: var(--gray);">(0/2000)</span></label>
+                    <textarea id="descripcion" class="form-control" maxlength="2000" required placeholder="Describe el daño con el mayor detalle posible. Incluye referencias cercanas, gravedad, etc."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Fotografía del daño *</label>
+                    <div class="image-upload" id="dropZone">
+                        <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">📷</p>
+                        <p>Haz click para subir una foto</p>
+                        <small style="color: var(--gray);">JPG, PNG o WEBP · Máximo 5MB</small>
+                        <input type="file" id="foto" accept="image/*" style="display: none;">
+                    </div>
+                    <img id="imagePreview" class="image-preview" alt="Vista previa">
+                    <p class="error-msg" id="errorFoto">⚠️ Debes subir una fotografía del daño.</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top: 1rem; padding: 1rem; font-size: 1.1rem;">🚀 Enviar Reporte</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/form.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Registrado — SmartCity-F</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">🏙️ SmartCity-F</a>
+        <ul>
+            <li><a href="index.html">Inicio</a></li>
+            <li><a href="tickets.html">Mis Reportes</a></li>
+            <li><a href="form.html">Reportar Daño</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card" style="text-align: center;">
+            <div class="success-icon">✓</div>
+            <h1>¡Reporte registrado exitosamente!</h1>
+            <p style="color: var(--gray); margin-bottom: 2rem;">Tu solicitud fue procesada y el equipo de mantenimiento fue notificado.</p>
+            
+            <div class="ticket-display">
+                <small style="color: var(--gray);">Número de ticket</small>
+                <h2 id="ticketId">#SC-0000</h2>
+                <button onclick="copiarTicket()" class="btn btn-secondary" style="margin-top: 0.5rem;">📋 Copiar</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 2rem 0;">
+                <div style="background: #dbeafe; padding: 1rem; border-radius: 8px;">
+                    <h3 style="color: var(--primary); margin-bottom: 0.5rem;">✈️ Telegram notificado</h3>
+                    <p style="font-size: 0.9rem; color: var(--gray);">El equipo de mantenimiento recibió tu reporte</p>
+                </div>
+                <div style="background: #dbeafe; padding: 1rem; border-radius: 8px;">
+                    <h3 style="color: var(--primary); margin-bottom: 0.5rem;">✦ IA clasificó tu caso</h3>
+                    <p style="font-size: 0.9rem; color: var(--gray);">La inteligencia artificial realizó una clasificación inicial</p>
+                </div>
+                <div style="background: #dbeafe; padding: 1rem; border-radius: 8px;">
+                    <h3 style="color: var(--primary); margin-bottom: 0.5rem;">🗄️ Ticket almacenado</h3>
+                    <p style="font-size: 0.9rem; color: var(--gray);">Tu reporte fue guardado para seguimiento</p>
+                </div>
+            </div>
+
+            <div class="ai-box" style="text-align: left;">
+                <h3>✦ Análisis preliminar de la IA</h3>
+                <div class="ai-grid">
+                    <div class="ai-item">
+                        <strong>Categoría detectada</strong>
+                        <span id="aiCategoria">—</span>
+                    </div>
+                    <div class="ai-item">
+                        <strong>Prioridad asignada</strong>
+                        <span id="aiPrioridad">—</span>
+                    </div>
+                    <div class="ai-item">
+                        <strong>Nivel de confianza</strong>
+                        <span id="aiConfianza">—</span>
+                    </div>
+                </div>
+                <p style="margin-top: 1rem; font-style: italic; color: var(--gray);" id="aiResumen">Procesando con IA...</p>
+            </div>
+
+            <div style="background: #f1f5f9; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; text-align: left;">
+                <h3 style="margin-bottom: 1rem;">¿Qué sigue ahora?</h3>
+                <ol style="padding-left: 1.5rem; color: var(--gray);">
+                    <li style="margin-bottom: 0.5rem;">El equipo de mantenimiento revisará tu reporte y comenzará a trabajar en la solución.</li>
+                    <li style="margin-bottom: 0.5rem;">Recibirás actualizaciones sobre el estado de tu reporte.</li>
+                    <li>Puedes consultar el estado de tu ticket en cualquier momento usando el número asignado.</li>
+                </ol>
+            </div>
+
+            <div class="action-buttons">
+                <a href="tickets.html" class="btn btn-primary">📋 Consultar estado del ticket</a>
+                <a href="form.html" class="btn btn-secondary">📍 Reportar otro daño</a>
+                <a href="index.html" class="btn" style="background: white; color: var(--dark); border: 2px solid #e2e8f0;">🏠 Volver al inicio</a>
+            </div>
+
+            <p style="margin-top: 2rem; color: var(--gray); font-size: 0.9rem;">
+                <strong>Tiempo estimado de respuesta según prioridad:</strong><br>
+                Crítica: 1h · Alta: 4h · Moderada: 24h · Baja: 72h
+            </p>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script>
+        function copiarTicket() {
+            const ticketId = document.getElementById('ticketId').textContent;
+            navigator.clipboard.writeText(ticketId).then(() => {
+                alert('Número de ticket copiado: ' + ticketId);
+            });
+        }
+    </script>
+</body>
+</html>

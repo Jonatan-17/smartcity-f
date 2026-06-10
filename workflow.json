@@ -1,0 +1,679 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "smartcity-reporte",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1456,
+        32
+      ],
+      "id": "f4b8027c-8bf5-4200-bb27-0eac834d6b58",
+      "name": "Webhook",
+      "webhookId": "44b6d0b5-ca23-4c80-9ee5-232c62b53aab"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "=Eres un experto en infraestructura urbana. Analiza la imagen y la descripción del reporte ciudadano.\n\nDebes responder ÚNICAMENTE con un JSON válido (sin markdown, sin comillas triples, sin texto extra) con esta estructura exacta:\n\n{\n  \"categoria\": \"Vías | Eléctrico | Acueducto | Semáforos | Espacio Público\",\n  \"prioridad\": \"Crítica | Alta | Moderada | Baja\",\n  \"confianza\": \"95%\",\n  \"resumen\": \"Un resumen ejecutivo de 1 oración sobre el daño y la acción recomendada.\"\n}\n\nDescripción del ciudadano: {{ $json.body.descripcion }}",
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -1040,
+        32
+      ],
+      "id": "1399750f-71df-4647-9092-985db384cba7",
+      "name": "Analyze an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZH0i4pd98Vi40qRa",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst base64Data = items[0].json.body.fotoBase64;\n\n// Limpiar el prefijo \"data:image/jpeg;base64,\"\nconst base64String = base64Data.includes(',') ? base64Data.split(',')[1] : base64Data;\nconst buffer = Buffer.from(base64String, 'base64');\n\nreturn [{\n  json: items[0].json,\n  binary: {\n    data: {\n      data: buffer,\n      mimeType: 'image/jpeg',\n      fileName: 'reporte.jpg'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1248,
+        32
+      ],
+      "id": "403fd389-5c15-4472-ab9d-1ce878749991",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// Verificar si hay datos\nif (!items || !items[0] || !items[0].json) {\n  return [{\n    json: {\n      error: \"No hay datos de entrada\",\n      categoria: \"Espacio Público\",\n      prioridad: \"Moderada\",\n      confianza: \"100%\",\n      resumen: \"Error en el procesamiento. Intente nuevamente.\",\n      ticketId: 'SC-' + Math.floor(1000 + Math.random() * 9000),\n      ruta: 'revision',\n      timestamp: new Date().toISOString()\n    }\n  }];\n}\n\nconst geminiResponse = items[0].json;\n\n// La respuesta de Gemini viene en content.parts[0].text\nlet aiResponse = null;\n\ntry {\n  // Estructura correcta de Gemini 2.5\n  if (geminiResponse.candidates && geminiResponse.candidates[0]) {\n    aiResponse = geminiResponse.candidates[0].content.parts[0].text;\n  } else if (geminiResponse.content && geminiResponse.content.parts) {\n    aiResponse = geminiResponse.content.parts[0].text;\n  } else {\n    throw new Error(\"Estructura de respuesta no reconocida\");\n  }\n\n  if (!aiResponse) {\n    throw new Error(\"No se obtuvo texto de la respuesta\");\n  }\n\n  // Limpiar markdown y obtener JSON\n  const cleanJson = aiResponse\n    .replace(/```json\\n?/g, '')\n    .replace(/```/g, '')\n    .trim();\n\n  // Parsear JSON\n  const parsed = JSON.parse(cleanJson);\n  \n  // Generar ID único\n  const ticketId = 'SC-' + Math.floor(1000 + Math.random() * 9000);\n  \n  // Lógica de criticidad\n  let ruta = 'normal';\n  const confianzaNum = parseInt(parsed.confianza) || 0;\n  \n  if (parsed.prioridad === 'Crítica' && confianzaNum >= 85) {\n    ruta = 'urgente';\n  } else if (parsed.prioridad === 'Baja' || confianzaNum < 60) {\n    ruta = 'revision';\n  }\n  \n  return [{\n    json: {\n      categoria: parsed.categoria || \"Espacio Público\",\n      prioridad: parsed.prioridad || \"Moderada\",\n      confianza: parsed.confianza || \"100%\",\n      resumen: parsed.resumen || \"Análisis realizado\",\n      ticketId: ticketId,\n      ruta: ruta,\n      timestamp: new Date().toISOString()\n    }\n  }];\n  \n} catch (e) {\n  console.error('Error:', e.message);\n  \n  return [{\n    json: {\n      error: e.message,\n      categoria: \"Espacio Público\",\n      prioridad: \"Moderada\",\n      confianza: \"100%\",\n      resumen: \"Análisis automático realizado por IA.\",\n      ticketId: 'SC-' + Math.floor(1000 + Math.random() * 9000),\n      ruta: 'normal',\n      timestamp: new Date().toISOString()\n    }\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -816,
+        32
+      ],
+      "id": "6fb2db59-aa50-47d1-814f-87bebdc7be58",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "TU_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/TU_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Ruta": "={{ $json.ruta }}",
+            "Timestamp": "={{ $json.timestamp }}",
+            "Categoria": "={{ $json.categoria }}",
+            "Prioridad ": "={{ $json.prioridad }}",
+            "Confianza ": "={{ $json.confianza }}",
+            "Resumen ": "={{ $json.resumen }}",
+            "Ticket ID": "={{ $json.ticketId }}",
+            "estado ticket": "APROBADO"
+          },
+          "matchingColumns": [
+            "Ticket ID"
+          ],
+          "schema": [
+            {
+              "id": "Ticket ID",
+              "displayName": "Ticket ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Prioridad ",
+              "displayName": "Prioridad ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Confianza ",
+              "displayName": "Confianza ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Resumen ",
+              "displayName": "Resumen ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ruta",
+              "displayName": "Ruta",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "estado ticket",
+              "displayName": "estado ticket",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -560,
+        32
+      ],
+      "id": "f54088ef-6c49-4044-b233-b16c21700add",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "vk8PArfqe0gQNZtj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1472,
+        544
+      ],
+      "id": "e67070ca-5af0-418b-a552-a69c4387f15b",
+      "name": "Telegram Trigger",
+      "webhookId": "93c38714-861b-4049-bd7c-99d7fed3b784",
+      "credentials": {
+        "telegramApi": {
+          "id": "n4R0rLNmOLxunovS",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const messageText = item.json.message.text || \"\";\n  const chatId = item.json.message.chat.id;\n  const userName = item.json.message.from.first_name || \"Ciudadano\";\n  \n  // Limpiar el texto: quitar espacios y convertir a mayúsculas\n  const ticketId = messageText.trim().toUpperCase();\n  \n  // Validar formato del Ticket ID (debe ser SC-XXXX)\n  const ticketPattern = /^SC-\\d{4}$/;\n  const esValido = ticketPattern.test(ticketId);\n  \n  results.push({\n    json: {\n      chatId: chatId,\n      ticketId: ticketId,\n      userName: userName,\n      mensajeOriginal: messageText,\n      esValido: esValido,\n      timestamp: new Date().toISOString()\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1248,
+        544
+      ],
+      "id": "1135d43d-8567-4d55-a16d-d0bc53681824",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=✅ Ticket encontrado\n\n🎫 ID: {{ $json.ticketId }}\n📂 Categoría: {{ $json.categoria }}\n⚡ Prioridad: {{ $json.prioridad }}\n🎯 Confianza: {{ $json.confianza }}\n📝 Resumen: {{ $json.resumen }}\n🔄 Estado: {{ $json.estado }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -192,
+        400
+      ],
+      "id": "02d0bced-7aa3-476f-8583-c3889c3b3593",
+      "name": "Send a text message",
+      "webhookId": "f2a2c120-fa1a-4ba7-a4bf-a0563e00d65e",
+      "credentials": {
+        "telegramApi": {
+          "id": "n4R0rLNmOLxunovS",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "TU_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/TU_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Ticket ID",
+              "lookupValue": "={{ $json.ticketId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -864,
+        416
+      ],
+      "id": "cd5891b7-2980-4d7e-ba8d-bddd140b30fc",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "vk8PArfqe0gQNZtj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=❌ ️ Formato inválido\n\nPor favor envía un número de ticket válido.\nEjemplo: SC-1234",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -832,
+        704
+      ],
+      "id": "9926916b-cc64-4a10-af8b-34c876ed7153",
+      "name": "Send a text message1",
+      "webhookId": "3e09774c-0f23-4d8e-babb-8128dd05182b",
+      "credentials": {
+        "telegramApi": {
+          "id": "n4R0rLNmOLxunovS",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2078dec3-b5c0-41f7-8122-19853d6a5ceb",
+              "leftValue": "={{ $json.encontrado == true }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -432,
+        416
+      ],
+      "id": "ca8c0f88-1227-4295-8850-c7cb7e6f9968",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst ticketId = $('Code in JavaScript2').item.json.ticketId;\nconst chatId = $('Code in JavaScript2').item.json.chatId;\nconst userName = $('Code in JavaScript2').item.json.userName;\n\n// Verificar si Google Sheets realmente encontró algo\n// Cuando no encuentra, devuelve null o un objeto vacío\nif (items.length === 0 || !items[0] || !items[0].json || Object.keys(items[0].json).length === 0) {\n  return [{\n    json: {\n      chatId: chatId,\n      ticketId: ticketId,\n      userName: userName,\n      encontrado: false\n    }\n  }];\n}\n\nconst rowData = items[0].json;\n\n// Verificar si el Ticket ID coincide (por si hay falsos positivos)\nif (!rowData[\"Ticket ID\"] || rowData[\"Ticket ID\"] !== ticketId) {\n  return [{\n    json: {\n      chatId: chatId,\n      ticketId: ticketId,\n      userName: userName,\n      encontrado: false\n    }\n  }];\n}\n\n// Si todo está bien, devolver los datos\nreturn [{\n  json: {\n    chatId: chatId,\n    ticketId: ticketId,\n    userName: userName,\n    encontrado: true,\n    categoria: rowData[\"Categoria\"] || \"No especificada\",\n    prioridad: rowData[\"Prioridad \"] || rowData[\"Prioridad\"] || \"No asignada\",\n    confianza: rowData[\"Confianza \"] || rowData[\"Confianza\"] || \"0%\",\n    resumen: rowData[\"Resumen \"] || rowData[\"Resumen\"] || \"Sin resumen\",\n    estado: rowData[\"estado ticket\"] || \"Pendiente\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        416
+      ],
+      "id": "30f43877-ce0a-4865-a1b4-7870c9333a9a",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b497ee0d-b6c8-4e4c-8e9e-35b7042ae8bd",
+              "leftValue": "={{ $json.esValido }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1040,
+        544
+      ],
+      "id": "e14f8c69-f5ac-4d51-addf-7043d43f5e71",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=❌ Ticket no encontrado  No existe ningún reporte con el ID: {{ $json.ticketId }}  Verifica el número e intenta nuevamente.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -192,
+        640
+      ],
+      "id": "04e2ac06-0959-48de-9599-7a46c7c737c4",
+      "name": "Send a text message2",
+      "webhookId": "405ab223-a67c-4e13-8704-ba81f4d20795",
+      "credentials": {
+        "telegramApi": {
+          "id": "n4R0rLNmOLxunovS",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "da96c4d8-6dc2-46ef-b9f5-4680931662db",
+              "leftValue": "={{ $json.ruta }}",
+              "rightValue": "Critica",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -320,
+        64
+      ],
+      "id": "cc1b2d94-beab-40c8-8263-b6241c28fe55",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "chatId": "{{ $('Webhook').item.json.body.chatId }}",
+        "text": "=🚨 REPORTE URGENTE 🚨  Ticket: {{ $json.ticketId }} Categoría: {{ $json.categoria }} Prioridad: {{ $json.prioridad }} Confianza: {{ $json.confianza }}  Resumen: {{ $json.resumen }}  Ubicación: https://www.google.com/maps?q={{ $('Webhook').item.json.body.lat }},{{ $('Webhook').item.json.body.lng }}  Descripción: {{ $('Webhook').item.json.body.descripcion }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        -16
+      ],
+      "id": "3003c893-40c8-492a-83f5-44ca8a28b578",
+      "name": "Send a text message3",
+      "webhookId": "f9e76b12-240d-4506-854c-0a06dc511582",
+      "credentials": {
+        "telegramApi": {
+          "id": "n4R0rLNmOLxunovS",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "=TU_CHAT_ID_DE_TELEGRAM",
+        "text": "=✅ Reporte registrado  Ticket:{{ $('Code in JavaScript1').item.json.ticketId }} Categoría:  {{ $('Code in JavaScript1').item.json.categoria }}Prioridad: {{ $('Code in JavaScript1').item.json.prioridad }} Estado: En revisión  Gracias por tu reporte.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        192
+      ],
+      "id": "b50f9667-bc78-4377-b9aa-0d89d358a9a9",
+      "name": "Send a text message4",
+      "webhookId": "9a9d7cbe-7e1a-45b9-a5da-cb758bb55e43",
+      "credentials": {
+        "telegramApi": {
+          "id": "n4R0rLNmOLxunovS",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Analyze an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c4adb7a5-fd81-4f4b-97bb-235217c303a6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4b5abd4d32c9d2d32b3027fbf64512873f4e5ffa25f7c45401efcc867040013e"
+  },
+  "nodeGroups": [],
+  "id": "5oa4t73FiPkzULDy",
+  "tags": []
+}
