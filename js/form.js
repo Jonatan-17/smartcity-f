@@ -198,29 +198,34 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.disabled = true;
 
         try {
+            // Generar Ticket ID único (UNA SOLA VEZ)
+            const ticketId = 'SC-' + Math.floor(1000 + Math.random() * 9000);
+
             // Preparar el payload para N8N
             const payload = {
-                nombre: document.getElementById('nombre').value,
-                cedula: document.getElementById('cedula').value,
-                telefono: document.getElementById('telefono').value,
-                lat: latInput.value,
-                lng: lngInput.value,
-                direccion: document.getElementById('direccion').value || 'No especificada',
-                descripcion: descripcion.value,
-                fotoBase64: fotoBase64,
-                fotoNombre: fotoNombre,
-                timestamp: new Date().toISOString()
+                body: {
+                    nombre: document.getElementById('nombre').value,
+                    cedula: document.getElementById('cedula').value,
+                    telefono: document.getElementById('telefono').value,
+                    lat: latInput.value,
+                    lng: lngInput.value,
+                    direccion: document.getElementById('direccion').value || 'No especificada',
+                    descripcion: descripcion.value,
+                    fotoBase64: fotoBase64,
+                    fotoNombre: fotoNombre,
+                    timestamp: new Date().toISOString(),
+                    ticketId: ticketId  // Enviar ticketId a N8N
+                }
             };
 
             // ⚠️ REEMPLAZA CON TU URL DE N8N
-          const N8N_WEBHOOK_URL = 'https://tu-dominio.ngrok-free.dev/webhook/smartcity-reporte';
-
+            const N8N_WEBHOOK_URL = 'https://tu-dominio.ngrok-free.dev/webhook/smartcu'
 
             // Enviar a N8N
             const response = await fetch(N8N_WEBHOOK_URL, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'  
                 },
                 body: JSON.stringify(payload)
             });
@@ -232,13 +237,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // N8N nos devolverá el análisis de la IA en tiempo real
             const aiResult = await response.json();
 
-            // Generar ID único
-            const ticketId = 'SC-' + Math.floor(1000 + Math.random() * 9000);
+            // USAR el ticketId que devuelve N8N (o el que enviamos si no devuelve)
+            const finalTicketId = aiResult.ticketId || ticketId;
 
-            // Guardar en LocalStorage
+            // Guardar en LocalStorage con el ticketId CORRECTO
             const ticket = {
-                id: ticketId,
-                ...payload,
+                id: finalTicketId,
+                ...payload.body,
                 aiCategoria: aiResult.categoria,
                 aiPrioridad: aiResult.prioridad,
                 aiConfianza: aiResult.confianza,
@@ -254,8 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('smartcity_tickets', JSON.stringify(tickets));
             localStorage.setItem('smartcity_last_ticket', JSON.stringify(ticket));
 
-            // Redirigir a success
-            window.location.href = 'success.html';
+            // Redirigir a success con el ticketId correcto
+            window.location.href = `success.html?ticket=${finalTicketId}`;
 
         } catch (error) {
             console.error('Error:', error);
