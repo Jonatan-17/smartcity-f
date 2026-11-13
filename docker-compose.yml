@@ -1,5 +1,6 @@
 version: '3.8'
 
+# Los valores se leen del archivo .env (copia .env.example como .env y completa tus datos).
 services:
   n8n:
     image: n8nio/n8n:latest
@@ -7,8 +8,8 @@ services:
     ports:
       - "5678:5678"
     environment:
-      - N8N_HOST=tu-dominio.ngrok-free.dev
-      - WEBHOOK_URL=https://tu-dominio.ngrok-free.dev/
+      - N8N_HOST=${NGROK_DOMAIN}
+      - WEBHOOK_URL=https://${NGROK_DOMAIN}/
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
       - NODE_ENV=production
@@ -23,7 +24,7 @@ services:
     command:
       - "http"
       - "n8n:5678"
-      - "--domain=tu-dominio.ngrok-free.dev"
+      - "--domain=${NGROK_DOMAIN}"
     depends_on:
       - n8n
 

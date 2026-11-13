@@ -28,19 +28,24 @@ Ciudadano -> Formulario web (GPS + foto) -> Webhook N8N -> Base64 a binario -> G
 
 ## Instalación rápida
 
-1. Clonar repositorio.
-
-2. Configurar `docker-compose.yml` con variables de entorno (CORS, webhook URL).
-
-3. Levantar contenedores:
+1. Clonar el repositorio:
 
    ```bash
-   docker-compose up -d --build
+   git clone https://github.com/Jonatan-17/smartcity-f.git
+   cd smartcity-f
    ```
 
-1. Acceder a frontend en `http://localhost:8080` y N8N en `https://tu-dominio.ngrok-free.dev/`.
-2. Importar workflow, configurar credenciales (Gemini, Google Sheets, Telegram) y activarlo.
-3. (Opcional) Usar ngrok para webhooks públicos.
+2. Copiar `.env.example` como `.env` y completar `NGROK_AUTHTOKEN` y `NGROK_DOMAIN`.
+
+3. Levantar los contenedores:
+
+   ```bash
+   docker compose up -d
+   ```
+
+4. Abrir N8N en `https://<tu-dominio>.ngrok-free.dev/`, importar `workflow.json` y configurar las credenciales de Gemini, Google Sheets y Telegram. En los nodos de Google Sheets, reemplazar `TU_GOOGLE_SHEET_ID` por el ID de tu hoja, y en el nodo de alertas, `TU_CHAT_ID_DE_TELEGRAM` por tu chat ID.
+5. En `js/form.js`, poner la URL del webhook de tu N8N en `N8N_WEBHOOK_URL`.
+6. Abrir `index.html` (por ejemplo con Live Server) y enviar un reporte de prueba.
 
 ## Funcionalidades principales
 
